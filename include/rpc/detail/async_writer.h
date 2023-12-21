@@ -67,6 +67,19 @@ public:
                     } else {
                         LOG_ERROR("Error while writing to socket: {}", ec);
                     }
+
+                    if (exit_) {
+                        LOG_INFO("Closing socket");
+                        std::error_code e;
+                        socket_.shutdown(
+                            RPCLIB_ASIO::ip::tcp::socket::shutdown_both,
+                            e);
+                        if (e) {
+                            LOG_WARN("std::system_error during socket shutdown. "
+                                     "Code: {}. Message: {}", e.value(), e.message());
+                        }
+                        socket_.close();
+                    }
                 }));
     }
 
