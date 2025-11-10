@@ -34,9 +34,14 @@ public:
 
     friend class rpc::detail::server_session;
 
+    //! \brief Sets the session ID. Normally, you should not need to call
+    //! this function, since rpclib does that for you.
+    //! \note This function might be useful if you are implementing
+    //! custom session management on top of rpclib.
+    void set_id(session_id_t value);
+
 private:
     void clear();
-    void set_id(session_id_t value);
 
     std::atomic_bool exit_{false};
     session_id_t id_{0};
