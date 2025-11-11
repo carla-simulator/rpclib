@@ -14,6 +14,7 @@
 #include "rpc/detail/log.h"
 #include "rpc/detail/server_session.h"
 #include "rpc/detail/thread_group.h"
+#include "rpc/this_session.h"
 
 using namespace rpc::detail;
 using RPCLIB_ASIO::ip::tcp;
@@ -49,6 +50,7 @@ struct server::impl {
                 s->start();
                 sessions_.push_back(s);
                 if (callback_on_connection_) {
+                    this_session().set_id(reinterpret_cast<session_id_t>(s.get()));
                     callback_on_connection_(s);
                 }
             } else {
@@ -72,6 +74,7 @@ struct server::impl {
         auto it = std::find(begin(sessions_), end(sessions_), s);
         if (it != end(sessions_)) {
             if (callback_on_disconnection_) {
+                this_session().set_id(reinterpret_cast<session_id_t>(s.get()));
                 callback_on_disconnection_(*it);
             }
             sessions_.erase(it);
