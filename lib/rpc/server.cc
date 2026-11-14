@@ -58,6 +58,7 @@ struct server::impl {
                 auto ep = socket_.remote_endpoint();
                 LOG_INFO("Accepted connection from {}:{}", ep.address(),
                          ep.port());
+                socket_.set_option(RPCLIB_ASIO::ip::tcp::no_delay(true));
                 auto s = std::make_shared<server_session>(
                     parent_, &io_, std::move(socket_), parent_->disp_,
                     suppress_exceptions_);
