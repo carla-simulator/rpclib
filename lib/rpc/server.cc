@@ -54,8 +54,16 @@ struct server::impl {
 
     void start_accept() {
         acceptor_.async_accept(socket_, [this](std::error_code ec) {
-            if (!ec) {
-                auto ep = socket_.remote_endpoint();
+            std::error_code ep_ec;
+            auto ep = ec ? tcp::endpoint() : socket_.remote_endpoint(ep_ec);
+            if (!ec && ep_ec) {
+                // The peer reset the connection between the accept and this
+                // handler: the throwing remote_endpoint() overload used to
+                // escape the io thread here and terminate the process.
+                LOG_WARN("Accepted connection already closed: {}", ep_ec);
+                std::error_code close_ec;
+                socket_.close(close_ec);
+            } else if (!ec) {
                 LOG_INFO("Accepted connection from {}:{}", ep.address(),
                          ep.port());
                 auto s = std::make_shared<server_session>(
